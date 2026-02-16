@@ -1,0 +1,124 @@
+/* -------------------------
+   Global Styles
+------------------------- */
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f3f4f6; /* light mode background */
+    color: #111827; /* light mode text */
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.dark body {
+    background-color: #0f172a; /* dark mode background */
+    color: #f3f4f6; /* dark mode text */
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* -------------------------
+   Navbar
+------------------------- */
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: #ffffff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    transition: background-color 0.3s;
+}
+
+.dark nav {
+    background-color: #1e293b;
+}
+
+nav h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+nav h1 span {
+    color: #3b82f6; /* blue accent */
+}
+
+.dark nav h1 span {
+    color: #60a5fa; /* light blue in dark mode */
+}
+
+nav button {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+/* -------------------------
+   Main Layout
+------------------------- */
+.main-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.left-panel, .right-panel {
+    flex: 1 1 400px;
+}
+
+input[type="file"],
+textarea,
+button {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid #d1d5db;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+}
+
+.dark input[type="file"],
+.dark textarea {
+    background-color: #1e293b;
+    border-color: #334155;
+    color: #f3f4f6;
+}
+
+button.generate-btn {
+    background: linear-gradient(to right, #3b82f6, #8b5cf6);
+    color: white;
+    font-weight: 600;
+    transition: opacity 0.2s;
+}
+
+button.generate-btn:hover {
+    opacity: 0.9;
+}
+
+button.download-btn {
+    background: #10b981;
+    color: white;
+    font-weight: 600;
+}
+
+button.download-btn:hover {
+    background: #059669;
+}
+
+/* -------------------------
+   Canvas Wrapper
+------------------------- */
+.canvas-wrapper {
+    width: 100%;
+    ma
