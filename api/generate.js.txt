@@ -1,0 +1,57 @@
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  const { prompt, imageBase64 } = req.body;
+
+  try {
+    // TEXT GENERATION
+    const textResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: "Generate 3 viral YouTube titles, an SEO description, and tags."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ]
+      })
+    });
+
+    const textData = await textResponse.json();
+
+    // IMAGE GENERATION / EDIT
+    const imageResponse = await fetch("https://api.openai.com/v1/images/generations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-image-1",
+        prompt: `Create a YouTube thumbnail 1280x720. ${prompt}`,
+        size: "1280x720"
+      })
+    });
+
+    const imageData = await imageResponse.json();
+
+    res.status(200).json({
+      text: textData.choices[0].message.content,
+      image: imageData.data[0].b64_json
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: "AI generation failed" });
+  }
+}
