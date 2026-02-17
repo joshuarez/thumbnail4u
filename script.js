@@ -1,34 +1,47 @@
-document.getElementById("generateBtn").addEventListener("click", async () => {
-  const prompt = document.getElementById("promptInput").value;
-  const imageInput = document.getElementById("imageUpload");
+const generateBtn = document.getElementById("generateBtn");
 
-  let base64Image = null;
+if (generateBtn) {
+  generateBtn.addEventListener("click", async () => {
+    const promptInput = document.getElementById("promptInput");
+    const imageInput = document.getElementById("imageUpload");
+    const statusOutput = document.getElementById("textOutput");
 
-  if (imageInput.files[0]) {
-    base64Image = await toBase64(imageInput.files[0]);
-  }
+    const prompt = promptInput?.value?.trim() || "";
+    if (!prompt) {
+      if (statusOutput) statusOutput.innerText = "Please enter a prompt first.";
+      return;
+    }
 
-  const response = await fetch("/api/generate", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      prompt: prompt,
-      imageBase64: base64Image
-    })
+    let base64Image = null;
+
+    if (imageInput?.files?.[0]) {
+      base64Image = await toBase64(imageInput.files[0]);
+    }
+
+    try {
+      const response = await fetch("./api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt, imageBase64: base64Image })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (statusOutput) {
+        statusOutput.innerText = data.text || data.message || "Generated successfully.";
+      }
+    } catch (error) {
+      if (statusOutput) {
+        statusOutput.innerText = "Could not reach ./api/generate. Make sure your API route is deployed.";
+      }
+      console.error(error);
+    }
   });
-
-  const data = await response.json();
-
-  // Display Image
-  const img = document.createElement("img");
-  img.src = `data:image/png;base64,${data.image}`;
-  img.className = "w-full rounded-xl";
-  document.getElementById("thumbnailPreview").innerHTML = "";
-  document.getElementById("thumbnailPreview").appendChild(img);
-
-  // Display Text
-  document.getElementById("textOutput").innerText = data.text;
-});
+}
 
 function toBase64(file) {
   return new Promise((resolve, reject) => {
