@@ -1,53 +1,71 @@
-const generateBtn = document.getElementById("generateBtn");
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("generator-form");
+  const promptInput = document.getElementById("prompt");
+  const imageInput = document.getElementById("imageUpload");
+  const resultImage = document.getElementById("result-image");
+  const resultText = document.getElementById("result-text");
+  const loading = document.getElementById("loading");
 
-if (generateBtn) {
-  generateBtn.addEventListener("click", async () => {
-    const promptInput = document.getElementById("promptInput");
-    const imageInput = document.getElementById("imageUpload");
-    const statusOutput = document.getElementById("textOutput");
+  let imageBase64 = null;
 
-    const prompt = promptInput?.value?.trim() || "";
+  // Convert uploaded image to base64
+  imageInput.addEventListener("change", (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      imageBase64 = reader.result.split(",")[1]; // Remove data:image/... prefix
+    };
+    reader.readAsDataURL(file);
+  });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const prompt = promptInput.value.trim();
+
     if (!prompt) {
-      if (statusOutput) statusOutput.innerText = "Please enter a prompt first.";
+      alert("Please enter a prompt.");
       return;
     }
 
-    let base64Image = null;
-
-    if (imageInput?.files?.[0]) {
-      base64Image = await toBase64(imageInput.files[0]);
-    }
+    loading.style.display = "block";
+    resultImage.style.display = "none";
+    resultText.innerHTML = "";
 
     try {
-      const response = await fetch("./api/generate", {
+      const response = await fetch("/api/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, imageBase64: base64Image })
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          prompt: prompt,
+          imageBase64: imageBase64
+        })
       });
-
-      if (!response.ok) {
-        throw new Error(`Request failed with status ${response.status}`);
-      }
 
       const data = await response.json();
 
-      if (statusOutput) {
-        statusOutput.innerText = data.text || data.message || "Generated successfully.";
+      if (!response.ok) {
+        throw new Error(data.error || "Something went wrong");
       }
+
+      // Display Image
+      resultImage.src = `data:image/png;base64,${data.image}`;
+      resultImage.style.display = "block";
+
+      // Display Text Output
+      resultText.innerHTML = `
+        <h3>Generated Content:</h3>
+        <pre>${data.text}</pre>
+      `;
+
     } catch (error) {
-      if (statusOutput) {
-        statusOutput.innerText = "Could not reach ./api/generate. Make sure your API route is deployed.";
-      }
-      console.error(error);
+      resultText.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+    } finally {
+      loading.style.display = "none";
     }
   });
-}
-
-function toBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result.split(",")[1]);
-    reader.onerror = error => reject(error);
-  });
-}
+});
