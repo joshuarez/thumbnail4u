@@ -1,26 +1,11 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", function () {
+
   const form = document.getElementById("generator-form");
   const promptInput = document.getElementById("prompt");
-  const imageInput = document.getElementById("imageUpload");
-  const resultImage = document.getElementById("result-image");
-  const resultText = document.getElementById("result-text");
+  const resultBox = document.getElementById("result");
   const loading = document.getElementById("loading");
 
-  let imageBase64 = null;
-
-  // Convert uploaded image to base64
-  imageInput.addEventListener("change", (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      imageBase64 = reader.result.split(",")[1]; // Remove data:image/... prefix
-    };
-    reader.readAsDataURL(file);
-  });
-
-  form.addEventListener("submit", async (e) => {
+  form.addEventListener("submit", async function (e) {
     e.preventDefault();
 
     const prompt = promptInput.value.trim();
@@ -31,8 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     loading.style.display = "block";
-    resultImage.style.display = "none";
-    resultText.innerHTML = "";
+    resultBox.innerHTML = "";
 
     try {
       const response = await fetch("/api/generate", {
@@ -40,32 +24,30 @@ document.addEventListener("DOMContentLoaded", () => {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          prompt: prompt,
-          imageBase64: imageBase64
-        })
+        body: JSON.stringify({ prompt: prompt })
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Something went wrong");
+        throw new Error(data.error || "Failed to generate.");
       }
 
-      // Display Image
-      resultImage.src = `data:image/png;base64,${data.image}`;
-      resultImage.style.display = "block";
-
-      // Display Text Output
-      resultText.innerHTML = `
-        <h3>Generated Content:</h3>
-        <pre>${data.text}</pre>
+      resultBox.innerHTML = `
+        <div class="ai-result">
+          <img src="data:image/png;base64,${data.image}" class="generated-thumbnail"/>
+          <div class="generated-text">
+            <h3>AI Titles:</h3>
+            <pre>${data.text}</pre>
+          </div>
+        </div>
       `;
 
-    } catch (error) {
-      resultText.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
-    } finally {
-      loading.style.display = "none";
+    } catch (err) {
+      resultBox.innerHTML = `<p class="error">Error: ${err.message}</p>`;
     }
+
+    loading.style.display = "none";
   });
+
 });
